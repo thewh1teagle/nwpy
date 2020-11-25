@@ -189,7 +189,17 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description="Network scanner")
     parser.add_argument('-i', required=False, help="interface", default=None)
+    parser.add_argument('-l', required=False, help="List available interfaces", action='store_true')
     args = parser.parse_args()
+
+    if args.l:
+        interfaces = socket.if_nameindex() 
+        for interface in interfaces:
+            print("{}. {}".format(
+                interface[0], interface[1]
+            ))
+        exit(0)
+
     if args.i:
         ifname = args.i
     else:
