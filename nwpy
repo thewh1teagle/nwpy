@@ -1,24 +1,26 @@
 #!/usr/bin/env python3
 
-import tableprint as tp
-from mac_vendor_lookup import MacLookup
+import tableprint
 import socket
 import fcntl
 import struct
-from netaddr import IPNetwork
-import subprocess
-from threading import Thread
-from queue import Queue
+import argparse
 import os
 import sys
 import time
 import dns.resolver
-import argparse
+import subprocess
+from queue import Queue
+from threading import Thread
+from netaddr import IPNetwork
+from mac_vendor_lookup import MacLookup
 
 
 
 
-def get_ip_address(ifname):
+
+def get_ip_address(ifname) -> str:
+    """ Return the current ip address of the interface """
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     return socket.inet_ntoa(fcntl.ioctl(
         s.fileno(),
@@ -27,7 +29,8 @@ def get_ip_address(ifname):
     )[20:24])
 
 
-def get_default_iface_name_linux():
+def get_default_iface_name_linux() -> str:
+    """ Return the default network interface """
     route = "/proc/net/route"
     with open(route) as f:
         for line in f.readlines():
@@ -40,16 +43,19 @@ def get_default_iface_name_linux():
                 continue
 
 def get_prefix(mask):
+    """ calculate prefix by network mask """
     prefix = sum([bin(int(x)).count('1') for x in mask.split('.')])
     return prefix
 
-def get_netmask(ifname): 
+def get_netmask(ifname):
+    """ Find network mask by given interface """
     ifname = ifname.encode()
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) 
     return socket.inet_ntoa(fcntl.ioctl(s.fileno(), 0x891b, struct.pack(b'256s',ifname))[20:24]) 
 
 
 def get_ips_of_network(ifname):
+    """ Find possible ips in the current network """
     try:
         if not ifname:
             ifname = get_default_iface_name_linux()
@@ -64,6 +70,7 @@ def get_ips_of_network(ifname):
 
 
 def get_arp_list(ifname):
+    """ Find the current arp online clients """
     deafult_gateway = get_default_gateway_linux()
     PIPE, STDOUT = subprocess.PIPE, subprocess.STDOUT
     arpA_req = subprocess.Popen(
@@ -103,12 +110,14 @@ def get_default_gateway_linux():
             return socket.inet_ntoa(struct.pack("<L", int(fields[2], 16)))
 
 def getHwAddr(ifname):
+    """ Read mac address of interface """
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     info = fcntl.ioctl(s.fileno(), 0x8927,  struct.pack('256s', bytes(ifname, 'utf-8')[:15]))
     return ':'.join('%02x' % b for b in info[18:24])
 
 
 def get_hostname(ip):
+    """ Find local domain by ip """
     try:
         dns_raw_hostname = dns.reversename.from_address(ip)   
         dns_raw_hostname = dns_raw_hostname.to_text()
@@ -129,6 +138,7 @@ def get_hostname(ip):
 
 
 class Pinger:
+    """ Multithreaded class for pinging hosts and display progress """
     def __init__(self, ips: list):
         self.q = Queue()
         self.len_of_ips = len(ips)
@@ -136,9 +146,6 @@ class Pinger:
         for ip in ips:
             self.q.put(ip)
 
-
-    def start(self):
-        self.start_workers()
 
     def start_workers(self, num = 10):
         self.threads.append(Thread(target=self.progress_worker))
@@ -159,7 +166,7 @@ class Pinger:
             sys.stdout.write(f"\rScanning... {percentage}%")
             time.sleep(0.1)
         print()
-        print ("\033[A\033[A")
+        print ("\033[A\033[A") # Clear last line
 
     def scanner_worker(self):
         while not self.q.empty():
@@ -180,25 +187,27 @@ class Pinger:
 
 if __name__ == '__main__':
 
-
     parser = argparse.ArgumentParser(description="Network scanner")
     parser.add_argument('-i', required=False, help="interface", default=None)
     args = parser.parse_args()
-    ips = get_ips_of_network(args.i)
+    if args.i:
+        ifname = args.i
+    else:
+        ifname = get_default_iface_name_linux() # My default interface
+    ips = get_ips_of_network(ifname)
     pinger = Pinger(ips)
-    pinger.start()
-    time.sleep(5)
-    ifname = get_default_iface_name_linux()
+    pinger.start_workers()
+    time.sleep(5) # delay for arp to be refreshed
+    
     arp_data = get_arp_list(ifname) # [ (ip, mac) ]
-
     default_gateway = get_default_gateway_linux()
     for section in arp_data:
-        try:
+        try: # Add mac vendors
             section.append(MacLookup().lookup(section[1]))
         except:
             section.append("Unknown")
 
-        try:
+        try: # Add local hostnames
             if section[0] == default_gateway:
                 section.append("Default gateway")
                 continue
@@ -208,6 +217,7 @@ if __name__ == '__main__':
         except:
             section.append("Unknown")
 
+    # Insert my computer info into the scanned data
     my_mac = getHwAddr(ifname)
     arp_data.insert(1,
         [get_ip_address(ifname), my_mac, MacLookup().lookup(my_mac), 'Your pc']
@@ -215,5 +225,5 @@ if __name__ == '__main__':
 
 
 
-    headers = ['IP', 'MAC', 'VENDOR', 'HOSTNAME']
-    tp.table(arp_data, headers)
+    headers = ['IP', 'MAC', 'VENDOR', 'HOSTNAME'] # Prepare the table titles
+    tableprint.table(arp_data, headers) # Display the table
