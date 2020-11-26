@@ -164,7 +164,9 @@ class Pinger:
             # print(self.q.qsize(), self.len_of_ips)
             percentage = self.percentage(self.len_of_ips - self.q.qsize(), self.len_of_ips)
             sys.stdout.write(f"\rScanning... {percentage}%")
+
             time.sleep(0.01)
+        sys.stdout.write("\rAnalyzing data...")
         print()
         print ("\033[A\033[A") # Clear last line
 
