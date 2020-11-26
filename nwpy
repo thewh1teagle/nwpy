@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import tableprint
 import socket
 import fcntl
 import struct
@@ -10,6 +9,7 @@ import sys
 import time
 import dns.resolver
 import subprocess
+import tabletext
 from queue import Queue
 from threading import Thread
 from netaddr import IPNetwork
@@ -175,14 +175,16 @@ class Pinger:
             ip = self.q.get()
             self.ping(ip)
 
-    def ping(self, ip):
-        # print(f"pinging {ip}")
-        for _ in range(2):
-            response = os.system("timeout 0.1 ping -c 1 " + ip + " > /dev/null 2>&1")
-            # and then check the response...
-            if response == 0:
-                return True
-        return False
+    def ping(self, host):
+        """
+        Returns True if host (str) responds to a ping request.
+        Remember that a host may not respond to a ping (ICMP) request even if the host name is valid.
+        """
+
+        # Building the command. Ex: "ping -c 1 google.com"
+        command = ['timeout', '0.2', 'ping', '-c', '1', host]
+        FNULL = open(os.devnull, 'w')
+        return subprocess.call(command, stdout=FNULL, stderr=subprocess.STDOUT) == 0
 
 
 
@@ -219,21 +221,24 @@ if __name__ == '__main__':
 
         try: # Add local hostnames
             if section[0] == default_gateway:
-                section.append("Default gateway")
-                continue
-            section.append(
-                get_hostname(section[0])
-            )
+                section.append(get_hostname(section[0]) + " (Default gateway)")
+            else:
+                section.append(
+                    get_hostname(section[0])
+                )
         except:
             section.append("Unknown")
 
     # Insert my computer info into the scanned data
     my_mac = getHwAddr(ifname)
+    my_hostname = socket.gethostname()
     arp_data.insert(1,
-        [get_ip_address(ifname), my_mac, MacLookup().lookup(my_mac), 'Your pc']
+        [get_ip_address(ifname), my_mac, MacLookup().lookup(my_mac), my_hostname + ' (Your PC)']
     )
 
 
 
     headers = ['IP', 'MAC', 'VENDOR', 'HOSTNAME'] # Prepare the table titles
-    tableprint.table(arp_data, headers) # Display the table
+    arp_data.insert(0, headers)
+    table = tabletext.to_text(arp_data, header=True, padding=(1,1))
+    print(table)
