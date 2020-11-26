@@ -147,7 +147,7 @@ class Pinger:
             self.q.put(ip)
 
 
-    def start_workers(self, num = 10):
+    def start_workers(self, num = 30):
         self.threads.append(Thread(target=self.progress_worker))
         for _ in range(num):
             self.threads.append(Thread(target=self.scanner_worker))
@@ -165,6 +165,9 @@ class Pinger:
             percentage = self.percentage(self.len_of_ips - self.q.qsize(), self.len_of_ips)
             sys.stdout.write(f"\rScanning... {percentage}%")
             time.sleep(0.1)
+
+
+        sys.stdout.write("\rAnalyzing data...")
         print()
         print ("\033[A\033[A") # Clear last line
 
@@ -197,7 +200,6 @@ if __name__ == '__main__':
     ips = get_ips_of_network(ifname)
     pinger = Pinger(ips)
     pinger.start_workers()
-    time.sleep(5) # delay for arp to be refreshed
     
     arp_data = get_arp_list(ifname) # [ (ip, mac) ]
     default_gateway = get_default_gateway_linux()
