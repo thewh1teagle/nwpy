@@ -19,11 +19,12 @@ sudo mv nwpy /usr/local/bin
 Simply run ```nwpy```, It will look for your default interface and start scanning.
 ```bash
 $ nwpy --help
-usage: nwpy [-h] [-i I]
+usage: nwpy [-h] [-i I] [-l]
 
 Network scanner
 
 optional arguments:
   -h, --help  show this help message and exit
   -i I        interface
+  -l          List available interfaces
 ```

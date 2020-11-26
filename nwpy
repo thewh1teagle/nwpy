@@ -164,9 +164,8 @@ class Pinger:
             # print(self.q.qsize(), self.len_of_ips)
             percentage = self.percentage(self.len_of_ips - self.q.qsize(), self.len_of_ips)
             sys.stdout.write(f"\rScanning... {percentage}%")
-            time.sleep(0.1)
 
-
+            time.sleep(0.01)
         sys.stdout.write("\rAnalyzing data...")
         print()
         print ("\033[A\033[A") # Clear last line
@@ -192,7 +191,17 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description="Network scanner")
     parser.add_argument('-i', required=False, help="interface", default=None)
+    parser.add_argument('-l', required=False, help="List available interfaces", action='store_true')
     args = parser.parse_args()
+
+    if args.l:
+        interfaces = socket.if_nameindex() 
+        for interface in interfaces:
+            print("{}. {}".format(
+                interface[0], interface[1]
+            ))
+        exit(0)
+
     if args.i:
         ifname = args.i
     else:
@@ -200,7 +209,6 @@ if __name__ == '__main__':
     ips = get_ips_of_network(ifname)
     pinger = Pinger(ips)
     pinger.start_workers()
-    
     arp_data = get_arp_list(ifname) # [ (ip, mac) ]
     default_gateway = get_default_gateway_linux()
     for section in arp_data:
