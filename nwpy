@@ -238,8 +238,12 @@ if __name__ == '__main__':
         my_hostname = socket.gethostname()
     except:
         my_hostname = "Unknown"
+    try:
+        my_vendor = MacLookup().lookup(my_mac)
+    except:
+        my_vendor = "Unknown"
     arp_data.insert(1,
-        [get_ip_address(ifname), my_mac, MacLookup().lookup(my_mac), my_hostname + ' (Your PC)']
+        [get_ip_address(ifname), my_mac, my_vendor, my_hostname + ' (Your PC)']
     )
 
 
