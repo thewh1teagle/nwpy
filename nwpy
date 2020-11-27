@@ -230,8 +230,14 @@ if __name__ == '__main__':
             section.append("Unknown")
 
     # Insert my computer info into the scanned data
-    my_mac = getHwAddr(ifname)
-    my_hostname = socket.gethostname()
+    try:
+        my_mac = getHwAddr(ifname)
+    except:
+        my_mac = "Unknown"
+    try:
+        my_hostname = socket.gethostname()
+    except:
+        my_hostname = "Unknown"
     arp_data.insert(1,
         [get_ip_address(ifname), my_mac, MacLookup().lookup(my_mac), my_hostname + ' (Your PC)']
     )
