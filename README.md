@@ -9,11 +9,11 @@ git clone https://github.com/thewh1teagle/nwpy
 ```
 2. install requirements
 ```
-pip3 install -r requirements.txt
+pip3 install -r nwpy/requirements.txt
 ```
 3. move nwpy into /usr/local/bin
 ```mv
-sudo mv nwpy /usr/local/bin
+sudo mv nwpy/nwpy /usr/local/bin
 ```
 # Basic Usage
 Simply run ```nwpy```, It will look for your default interface and start scanning.
