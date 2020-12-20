@@ -185,10 +185,7 @@ class Pinger:
         return False
 
 
-
-
-if __name__ == '__main__':
-
+def main():
     parser = argparse.ArgumentParser(description="Network scanner")
     parser.add_argument('-i', required=False, help="interface", default=None)
     parser.add_argument('-l', required=False, help="List available interfaces", action='store_true')
@@ -237,3 +234,7 @@ if __name__ == '__main__':
 
     headers = ['IP', 'MAC', 'VENDOR', 'HOSTNAME'] # Prepare the table titles
     tableprint.table(arp_data, headers) # Display the table
+
+
+if __name__ == '__main__':
+    main()
