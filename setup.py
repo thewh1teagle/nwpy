@@ -7,7 +7,7 @@ setup(
     name="nwpy",  # How you named your package folder
     packages=["nwpy"],  # Chose the same as "name"
     include_package_data=True,
-    version="v0.5",  # Start with a small number and increase it with every change you make
+    version="v0.6",  # Start with a small number and increase it with every change you make
     license="MIT",  # Chose a license from here: https://help.github.com/articles/licensing-a-repository
     description="TUI based network watcher using Python!",  # Give a short description about your library
     long_description=long_description,
@@ -24,7 +24,7 @@ setup(
         "anylzer",
     ],  # Keywords that define your package best
     install_requires=["dnspython", "mac-vendor-lookup", "tableprint"],  # I get to this in a second
-    entry_points={"console_scripts": ["nwpy = nwpy:main"]},
+    entry_points={"console_scripts": ["nwpy = nwpy.nwpy:main"]},
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",  # Define that your audience are developers
