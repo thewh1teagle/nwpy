@@ -24,7 +24,7 @@ setup(
         "anylzer",
     ],  # Keywords that define your package best
     install_requires=["dnspython", "mac-vendor-lookup", "tableprint"],  # I get to this in a second
-    entry_points={"console_scripts": ["nwpy = src.nwpy:main"]},
+    entry_points={"console_scripts": ["nwpy = nwpy:main"]},
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",  # Define that your audience are developers
