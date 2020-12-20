@@ -7,7 +7,7 @@ setup(
     name="nwpy",  # How you named your package folder
     packages=["src"],  # Chose the same as "name"
     include_package_data=True,
-    version="v0.1",  # Start with a small number and increase it with every change you make
+    version="v0.2",  # Start with a small number and increase it with every change you make
     license="MIT",  # Chose a license from here: https://help.github.com/articles/licensing-a-repository
     description="TUI based network watcher using Python!",  # Give a short description about your library
     long_description=long_description,
