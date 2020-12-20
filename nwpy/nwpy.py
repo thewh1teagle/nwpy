@@ -187,7 +187,7 @@ class Pinger:
 
 def main():
     parser = argparse.ArgumentParser(description="Network scanner")
-    parser.add_argument('-i', required=False, help="interface", default=None)
+    parser.add_argument('-i', required=False, help="interface", default=None, choices=[i[1] for i in socket.if_nameindex()])
     parser.add_argument('-l', required=False, help="List available interfaces", action='store_true')
     args = parser.parse_args()
 
