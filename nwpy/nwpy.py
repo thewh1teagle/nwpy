@@ -187,7 +187,7 @@ class Pinger:
 
 def main():
     parser = argparse.ArgumentParser(description="Network scanner")
-    parser.add_argument('-i', required=False, help="interface", default=None, choices=[i[1] for i in socket.if_nameindex()])
+    parser.add_argument('-i', required=False, help="interface", default=get_default_iface_name_linux(), choices=[i[1] for i in socket.if_nameindex()] or None)
     parser.add_argument('-l', required=False, help="List available interfaces", action='store_true')
     args = parser.parse_args()
 
@@ -199,14 +199,10 @@ def main():
             ))
         exit(0)
 
-    if args.i:
-        ifname = args.i
-    else:
-        ifname = get_default_iface_name_linux() # My default interface
-    ips = get_ips_of_network(ifname)
+    ips = get_ips_of_network(args.i)
     pinger = Pinger(ips)
     pinger.start_workers()
-    arp_data = get_arp_list(ifname) # [ (ip, mac) ]
+    arp_data = get_arp_list(args.i) # [ (ip, mac) ]
     default_gateway = get_default_gateway_linux()
     for section in arp_data:
         try: # Add mac vendors
@@ -225,9 +221,9 @@ def main():
             section.append("Unknown")
 
     # Insert my computer info into the scanned data
-    my_mac = getHwAddr(ifname)
+    my_mac = getHwAddr(args.i)
     arp_data.insert(1,
-        [get_ip_address(ifname), my_mac, MacLookup().lookup(my_mac), 'Your pc']
+        [get_ip_address(args.i), my_mac, MacLookup().lookup(my_mac), 'Your pc']
     )
 
 
