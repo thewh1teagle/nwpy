@@ -16,7 +16,8 @@ from netaddr import IPNetwork
 from mac_vendor_lookup import MacLookup
 
 
-
+def calc_percentage(part, whole):
+    return str(int(( 100 * float(part)//float(whole) )))
 
 
 def get_ip_address(ifname) -> str:
@@ -156,17 +157,15 @@ class Pinger:
         for worker in self.threads:
             worker.join()
 
-    def percentage(self, part, whole):
-        return int( 100 * float(part)//float(whole) )
+
 
     def progress_worker(self):
         while not self.q.empty():
             # print(self.q.qsize(), self.len_of_ips)
-            percentage = self.percentage(self.len_of_ips - self.q.qsize(), self.len_of_ips)
+            percentage = calc_percentage(self.len_of_ips - self.q.qsize(), self.len_of_ips)
             sys.stdout.write(f"\rScanning... {percentage}%")
 
             time.sleep(0.01)
-        sys.stdout.write("\rAnalyzing data...")
         print()
         print ("\033[A\033[A") # Clear last line
 
@@ -204,7 +203,13 @@ def main():
     pinger.start_workers()
     arp_data = get_arp_list(args.i) # [ (ip, mac) ]
     default_gateway = get_default_gateway_linux()
+    
+    
+    l = len(arp_data)
+    p = 0
+    
     for section in arp_data:
+        
         try: # Add mac vendors
             section.append(MacLookup().lookup(section[1]))
         except:
@@ -219,6 +224,11 @@ def main():
             )
         except:
             section.append("Unknown")
+        p += 1
+        percentage = calc_percentage(p, l)
+        sys.stdout.write(f"\rAnalyzing... {percentage}%")
+    print()
+    print ("\033[A\033[A") # Clear last line
 
     # Insert my computer info into the scanned data
     my_mac = getHwAddr(args.i)
